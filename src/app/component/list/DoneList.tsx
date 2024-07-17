@@ -6,7 +6,7 @@ import { TodoListType } from "@/app/page";
 
 import CheckedIcon from "@/icon/Checked.svg";
 
-export default function Done({ doneList }: { doneList: TodoListType[] }) {
+export default function DoneList({ doneList }: { doneList: TodoListType[] }) {
   return (
     <div className="flex deskTop:w-1/2 tablet:w-full mobile:w-full flex-col gap-4">
       <span className="w-[101px] h-9 bg-green-700 rounded-[23px] flex items-center justify-center font-normal text-[18px] text-amber-300">

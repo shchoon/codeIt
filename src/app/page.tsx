@@ -3,8 +3,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { instance } from "@/api/axios";
-import ToDo from "./component/list/ToDo";
-import Done from "./component/list/Done";
+import ToDo from "./component/list/ToDoList";
+import Done from "./component/list/DoneList";
 
 import PlusIcon from "@/icon/plus.svg";
 
@@ -79,7 +79,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="w-full flex flex-col gap-10">
+    <div className="w-full mt-6 flex flex-col gap-10">
       {/* 입력창 */}
       <div className="w-full h-[56px] flex gap-4">
         <input
