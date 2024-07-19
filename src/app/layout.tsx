@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import RecoidContextProvider from "./recoilContextProvider";
 
 import LogoL from "../../public/icon/LogoL.svg";
 import LogoS from "../../public/icon/LogoS.svg";
@@ -38,7 +39,7 @@ export default function RootLayout({
           />
         </header>
         <div className="w-full deskTop:px-[360px] tablet:px-6 mobile:px-4">
-          {children}
+          <RecoidContextProvider>{children}</RecoidContextProvider>
         </div>
       </body>
     </html>

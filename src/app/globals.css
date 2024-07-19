@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 @layer components {
+  .scroll::-webkit-scrollbar {
+    display: none;
+  }
   .font-bold-20 {
     @apply font-bold text-[20px]
   }

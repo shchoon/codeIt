@@ -1,82 +1,43 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { instance } from "@/api/axios";
 import ToDo from "./component/list/ToDoList";
 import Done from "./component/list/DoneList";
+import { ItemsDetailState } from "./recoil/itemsDetail";
+import { TodoItemsState, TodoItemsType } from "./recoil/todoItems";
+import { IsUpdatedItems } from "./recoil/isUpdatedItems";
 
 import PlusIcon from "@/icon/plus.svg";
 
-export interface TodoListType {
-  isCompleted: boolean;
-  name: string;
-  id: number;
-}
-
 export default function Home() {
+  const setTodoItemsState = useSetRecoilState(TodoItemsState);
+  const todoItems = useRecoilValue(TodoItemsState);
+  const setItemsDetailState = useSetRecoilState(ItemsDetailState);
   const [todo, setTodo] = useState<string>("");
-  const [todoList, setTodoList] = useState<TodoListType[]>([]);
-  const [doneList, setDoneList] = useState<TodoListType[]>([]);
+  const setIsChangedItems = useSetRecoilState(IsUpdatedItems);
 
   const createTodo = () => {
-    instance
-      .post("/items", {
-        name: todo,
-      })
-      .then((res) => {
-        setTodo("");
-        getTodoList();
-      });
-  };
-
-  const getTodoList = () => {
-    instance("/items", {
-      params: {
-        page: 1,
-        pageSize: 10,
-      },
-    }).then((res) => {
-      const data = res.data;
-      /* 진행중인 할 일 */
-      setTodoList(
-        data.filter((data: { isCompleted: boolean }) => !data.isCompleted)
-      );
-      /* 완료된 할 일 */
-      setDoneList(
-        data.filter((data: { isCompleted: boolean }) => data.isCompleted)
-      );
-    });
-  };
-
-  const completeTodoItem = (itemId: number) => {
-    instance
-      .patch(`/items/${itemId}`, {
-        isCompleted: true,
-      })
-      .then((res) => {
-        instance("/items", {
-          params: {
-            page: 1,
-            pageSize: 10,
-          },
-        }).then((res) => {
-          const data = res.data;
-          /* 진행중인 할 일 */
-          setTodoList(
-            data.filter((data: { isCompleted: boolean }) => !data.isCompleted)
-          );
-          /* 완료된 할 일 */
-          setDoneList(
-            data.filter((data: { isCompleted: boolean }) => data.isCompleted)
-          );
+    if (todo !== "") {
+      instance
+        .post("/items", {
+          name: todo,
+        })
+        .then((res) => {
+          setTodo("");
+          /* 업데이트된 값 받아오기 */
+          //getTodoList();
+          setIsChangedItems((prev) => ({
+            ...prev,
+            addItem: true,
+          }));
         });
-      });
+    } else {
+      alert("할 일을 입력해주세요!");
+    }
   };
-
-  useEffect(() => {
-    getTodoList();
-  }, []);
 
   return (
     <div className="w-full mt-6 flex flex-col gap-10">
@@ -111,9 +72,9 @@ export default function Home() {
       {/* 목록 리스트 */}
       <div className="w-full flex deskTop:gap-6 tablet:flex-col tablet:gap-12 mobile:flex-col mobile:gap-12">
         {/* TO DO list */}
-        <ToDo todoList={todoList} completeTodoItem={completeTodoItem} />
+        <ToDo />
         {/* DONE list */}
-        <Done doneList={doneList} />
+        <Done />
       </div>
     </div>
   );

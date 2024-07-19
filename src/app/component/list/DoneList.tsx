@@ -1,12 +1,32 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useRecoilValue } from "recoil";
 
 import { instance } from "@/api/axios";
-import { TodoListType } from "@/app/page";
+import { TodoItemsType } from "@/app/recoil/todoItems";
+import { IsUpdatedItems } from "@/app/recoil/isUpdatedItems";
 
 import CheckedIcon from "@/icon/Checked.svg";
 
-export default function DoneList({ doneList }: { doneList: TodoListType[] }) {
+export default function DoneList() {
+  const [doneList, setDoneList] = useState<TodoItemsType[]>([]);
+
+  const isUpdatedItems = useRecoilValue(IsUpdatedItems);
+
+  useEffect(() => {
+    instance("/items", {
+      params: {
+        page: 1,
+        pageSize: 20,
+      },
+    }).then((res) => {
+      const data = res.data;
+      setDoneList(
+        data.filter((data: { isCompleted: boolean }) => data.isCompleted)
+      );
+    });
+  }, [isUpdatedItems.revertToDone]);
+
   return (
     <div className="flex deskTop:w-1/2 tablet:w-full mobile:w-full flex-col gap-4">
       <span className="w-[101px] h-9 bg-green-700 rounded-[23px] flex items-center justify-center font-normal text-[18px] text-amber-300">
