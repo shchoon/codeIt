@@ -30,9 +30,10 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
     id: 0,
     isCompleted: false,
   });
-
+  const [img, setImg] = useState<File>();
   const itemDetails = useRecoilValue(ItemsDetailState);
   const setItemDetail = useSetRecoilState(ItemsDetailState);
+  const [isChangedDetail, setIsChangedDetail] = useState<boolean>(false);
   const [initialItemDetail, setInitialItemDetail] =
     useState<TodoItemDetailType>({
       name: "",
@@ -42,11 +43,11 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
       tenantId: "",
       imageUrl: "",
     });
-  const [isChangedDetail, setIsChangedDetail] = useState<boolean>(false);
 
   const checkStringOnlyEnglish = /^[a-zA-Z]+$/;
 
-  const updateItem = () => {
+  /* 수정된 값들 객체에 담기 */
+  const checkChangedDetail = () => {
     const updatedDetail: UpdatedDetailType = {};
     if (itemDetails.name !== initialItemDetail.name) {
       updatedDetail["name"] = itemDetails.name;
@@ -60,22 +61,51 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
     if (itemDetails.isCompleted !== initialItemDetail.isCompleted) {
       updatedDetail["isCompleted"] = itemDetails.isCompleted;
     }
-    console.log(updatedDetail);
-    instance
-      .patch(`/items/${params.itemId}`, {
-        ...updatedDetail,
-      })
-      .then(() => {
-        /* itemDetailState 초기화 */
-        setItemDetail((prev) => ({
-          ...prev,
-          name: "",
-          isCompleted: false,
-          memo: "",
-          imageUrl: "",
-        }));
-        router.push("/");
-      });
+    return updatedDetail;
+  };
+
+  const updateItem = () => {
+    const updatedDetail = checkChangedDetail();
+
+    /* 변경된 데이터에 이미지가 포함되는지 판단 */
+    if (Object.keys(updatedDetail).includes("imageUrl")) {
+      instance
+        .post(
+          `/images/upload`,
+          {
+            image: img,
+          },
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        )
+        .then((res: any) => {
+          console.log(res);
+          const image: string = res.data.url;
+          updatedDetail.imageUrl = image;
+          instance
+            .patch(`/items/${params.itemId}`, {
+              ...updatedDetail,
+            })
+            .then(() => {
+              router.push("/");
+            });
+        });
+    } else {
+      instance
+        .patch(`/items/${params.itemId}`, {
+          ...updatedDetail,
+        })
+        .then(() => {
+          router.push("/");
+        });
+    }
+  };
+
+  const deleteItem = () => {
+    instance.delete(`/items/${params.itemId}`).then(() => {
+      router.push("/");
+    });
   };
 
   useEffect(() => {
@@ -106,6 +136,19 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
         isCompleted: data.isCompleted,
       }));
     });
+
+    /* 페이지 아웃 시 itemsDetail 초기화 */
+    return () => {
+      setItemDetail((prev) => ({
+        ...prev,
+        name: "",
+        memo: "",
+        id: 0,
+        isCompleted: false,
+        tenantId: "",
+        imageUrl: "",
+      }));
+    };
   }, [params.itemId]);
 
   useEffect(() => {
@@ -130,8 +173,8 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
   }, [itemDetails]);
 
   return (
-    <div className="w-full flex flex-col gap-6 pt-6 deskTop:px-[102px]  h-screen bg-white">
-      <TodoItem todo={props} type="detail" />
+    <div className="w-full flex flex-col gap-6 deskTop:px-[102px]  h-screen bg-white">
+      <TodoItem type="detail" />
       <div className="w-full flex tablet:flex-col mobile:flex-col gap-6">
         {/* 이미지 */}
         <div
@@ -144,10 +187,8 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
           ) : (
             <Image
               src={itemDetails.imageUrl}
-              width={0}
-              height={0}
-              alt="preview"
               fill
+              alt="preview"
               className="rounded-3xl"
             />
           )}
@@ -165,12 +206,18 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
               onChange={(e) => {
                 if (e.target.files) {
                   const imgFile = e.target.files[0];
-                  console.log(e.target.files[0].name);
+                  console.log(e.target.files[0]);
+                  setImg(imgFile);
+                  const maxSize = 5 * 1024 * 1024;
                   const checkFileName = checkStringOnlyEnglish.test(
                     imgFile.name.replace(".", "")
                   );
+                  /* 파일 이름 제한 */
                   if (!checkFileName) {
-                    alert("파일 이름은 영어로만 이루어져야합니다!");
+                    alert("파일 이름은 영어로만 이루어져야합니다.");
+                  } else if (imgFile.size > maxSize) {
+                    /* 파일 크기 제한 */
+                    alert("파일 크기는 최대 5MB입니다.");
                   } else {
                     setItemDetail((prev) => ({
                       ...prev,
@@ -204,12 +251,14 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
             </label>
           </div>
         </div>
-        <div className="w-full h-[311px] pt-6 flex flex-col text-center rounded-3xl bg-[url('../img/memo.svg')]">
-          <span className="font-extrabold-16 text-amber-800">Memo</span>
+        <div className="flex-1 h-[311px] pt-6 flex flex-col text-center rounded-3xl bg-[url('../img/memo.svg')]">
+          <span className=" text-amber-800 font-extrabold text-[16px]">
+            Memo
+          </span>
           <div className="w-full h-full px-10 pt-20">
             <textarea
               placeholder="메모를 입력해주세요"
-              className="scroll w-full h-[200px] bg-inherit font-normal-16 text-slate-800 focus:outline-none"
+              className="scroll w-full h-[200px] bg-inherit text-center font-normal text-[16px] text-slate-800 focus:outline-none"
               value={itemDetails.memo}
               onChange={(e) => {
                 setItemDetail((prev) => ({
@@ -227,13 +276,20 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
             isChangedDetail ? "bg-lime-300" : "bg-slate-200"
           } flex items-center gap-1 justify-center border-2 border-slate-900 rounded-3xl shadow-[3.65px_4px_0_0_#0F172A]`}
           onClick={() => {
-            updateItem();
+            if (isChangedDetail) {
+              updateItem();
+            } else {
+              return;
+            }
           }}
         >
           <Image src={CheckIcon} alt="check" />
           <span className="font-bold-16 text-slate-900">수정 완료</span>
         </button>
-        <button className="w-[168px] h-14 bg-rose-500 flex items-center gap-1 justify-center border-2 border-slate-900 rounded-3xl shadow-[3.65px_4px_0_0_#0F172A]">
+        <button
+          className="w-[168px] h-14 bg-rose-500 flex items-center gap-1 justify-center border-2 border-slate-900 rounded-3xl shadow-[3.65px_4px_0_0_#0F172A]"
+          onClick={deleteItem}
+        >
           <Image src={DeleteIcon} alt="check" />
           <span className="font-bold-16 text-white">삭제하기</span>
         </button>

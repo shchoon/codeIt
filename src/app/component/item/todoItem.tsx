@@ -15,18 +15,19 @@ export default function TodoItem({
   todo,
   type,
 }: {
-  todo: TodoItemsType;
+  todo?: TodoItemsType;
   type: string;
 }) {
   const router = useRouter();
   const setIsUpdatedItem = useSetRecoilState(IsUpdatedItems);
-  const itemsDetailState = useRecoilValue(ItemsDetailState);
+  const itemDetails = useRecoilValue(ItemsDetailState);
   const setItemsDetailState = useSetRecoilState(ItemsDetailState);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   /* home에서 할 일 상태 변경 */
   const revertToDone = () => {
+    const itemId = todo ? todo.id : itemDetails.id;
     instance
-      .patch(`/items/${todo.id}`, {
+      .patch(`/items/${itemId}`, {
         isCompleted: true,
       })
       .then((res) => {
@@ -39,13 +40,13 @@ export default function TodoItem({
 
   return (
     <div
-      className={`w-full h-[50px] pl-4 flex items-center gap-4 border-2 border-slate-900 rounded-[27px] ${
-        todo.isCompleted && "bg-violet-200"
-      } ${itemsDetailState.isCompleted && "bg-violet-200"}`}
+      className={`w-full py-2 pl-4 flex items-center gap-4 border-2 border-slate-900 rounded-[27px]
+        ${todo && todo.isCompleted && "bg-violet-200"}
+        ${itemDetails.isCompleted && "bg-violet-200"}`}
     >
       <button
         className={`w-8 h-8 rounded-full border-2 border-slate-900  ${
-          itemsDetailState.isCompleted ? "bg-violet-100" : "bg-yellow-50"
+          itemDetails.isCompleted ? "bg-violet-100" : "bg-yellow-50"
         } `}
         onClick={() => {
           if (type === "detail") {
@@ -53,30 +54,33 @@ export default function TodoItem({
               ...prev,
               isCompleted: !prev.isCompleted,
             }));
-            //setIsCompleted((prev) => !prev);
-          } else if (type === "home") {
+          } else if (type === "todo") {
             revertToDone();
           }
         }}
       >
-        {todo.isCompleted && <Image src={CheckedIcon} alt="checked" />}
-        {itemsDetailState.isCompleted && (
+        {todo && todo.isCompleted && <Image src={CheckedIcon} alt="checked" />}
+        {type === "detail" && itemDetails.isCompleted && (
           <Image src={CheckedIcon} alt="checked" />
         )}
       </button>
-      {type === "home" ? (
+      {type === "todo" || type === "done" ? (
         <span
-          className="text-slate-800 font-normal-16 cursor-pointer"
+          className={`text-slate-800 cursor-pointer ${
+            type === "done" && "line-through"
+          }`}
           onClick={() => {
-            router.push(`/items/${todo.id}`);
+            if (todo) {
+              router.push(`/items/${todo.id}`);
+            }
           }}
         >
-          {todo.name}
+          {todo ? todo.name : itemDetails.name}
         </span>
       ) : (
         <input
           className="focus:outline-none bg-inherit underline"
-          value={itemsDetailState.name}
+          value={itemDetails.name}
           onChange={(e) => {
             setItemsDetailState((prev) => ({
               ...prev,

@@ -24,8 +24,8 @@ const config: Config = {
     },
     screens: {
       mobile: { max: "376px" },
-      tablet: { min: "376px", max: "1280px" },
-      deskTop: { min: "1281px" },
+      tablet: { min: "376px", max: "1440px" },
+      deskTop: { min: "1441px" },
     },
   },
   plugins: [],

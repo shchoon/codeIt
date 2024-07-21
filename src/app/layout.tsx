@@ -19,8 +19,9 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`bg-gray-50`}>
+      <body>
         <header className="relative w-full bg-white border-b border-slate-200 h-[60px] deskTop:pl-[360px] tablet:pl-6 mobile:pl-4 flex items-center">
+          {/* 데스그탑 & 태블릿 해상도에서만 노출 */}
           <Image
             src={LogoL}
             alt="Logo"
@@ -29,6 +30,7 @@ export default function RootLayout({
               router.push("/");
             }}
           />
+          {/* 모바일 해상도에서만 노출 */}
           <Image
             src={LogoS}
             alt="Logo"
@@ -38,7 +40,7 @@ export default function RootLayout({
             }}
           />
         </header>
-        <div className="w-full deskTop:px-[360px] tablet:px-6 mobile:px-4">
+        <div className="w-full h-screen py-6 bg-gray-50 deskTop:px-[360px] tablet:px-6 mobile:px-4">
           <RecoidContextProvider>{children}</RecoidContextProvider>
         </div>
       </body>
