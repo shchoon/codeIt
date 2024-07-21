@@ -2,7 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'NanumSquare';
+  font-weight: 700;
+  src: url('/public/font/NanumSquareB.ttf') format('ttf');
+}
+
+@font-face {
+  font-family: 'NanumSquare';
+  font-weight: 800;
+  src: url('/public/font/NanumSquareEB.ttf') format('ttf');
+}
+
+@font-face {
+  font-family: 'NanumSqaure';
+  font-weight: 400;
+  src: url('/public/font/NanumSquareR.ttf') format('ttf')
+}
+
+@font-face {
+  font-family: 'HS-Regular';
+  src: url('https://gcore.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/HS-Regular.woff') format('woff');
+}
+
+body {
+  font-family: 'NanumSquare';
+}
+
 @layer components {
+
+  .scroll::-webkit-scrollbar {
+    display: none;
+  }
   .font-bold-20 {
     @apply font-bold text-[20px]
   }
@@ -11,7 +42,7 @@
     @apply font-bold text-[18px]
   }
 
-  .font-extrbold-16 {
+  .font-extrabold-16 {
     @apply font-extrabold text-[16px]
   }
 
