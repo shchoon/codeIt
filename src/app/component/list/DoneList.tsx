@@ -81,7 +81,7 @@ export default function DoneList() {
 
   /*  무한 스크롤 */
   useEffect(() => {
-    if (firstRender) {
+    if (firstRender && allDoneList.length > 10) {
       const options = {
         root: null,
         rootMargin: "0px",

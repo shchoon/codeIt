@@ -25,7 +25,7 @@ export default function ToDoList() {
     hasNextPage: true,
   });
 
-  const getTodoData = (page: number, hasScroll: boolean) => {
+  const getTodoData = () => {
     instance("/items", {
       params: {
         page: 1,
@@ -48,16 +48,13 @@ export default function ToDoList() {
         page: prev.page + 1,
         hasNextPage: todos.length < 10 ? false : true,
       }));
-      if (hasScroll) {
-        setIsLoading(false);
-      }
     });
   };
 
   /* 첫 렌더링 & todoList update */
   useEffect(() => {
     /* 첫 렌더링 */
-    getTodoData(pageData.page, false);
+    getTodoData();
     setFirstRender(true);
 
     /* todoList update */
@@ -79,7 +76,7 @@ export default function ToDoList() {
 
   /* 무한 스크롤 */
   useEffect(() => {
-    if (firstRender) {
+    if (firstRender && allTodoList.length > 10) {
       console.log(todoList, pageData);
       const options = {
         root: null,
