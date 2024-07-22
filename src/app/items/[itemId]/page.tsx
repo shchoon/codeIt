@@ -25,11 +25,7 @@ interface UpdatedDetailType {
 
 export default function ItemDetail({ params }: { params: { itemId: string } }) {
   const router = useRouter();
-  const [props, setProps] = useState<TodoItemsType>({
-    name: "",
-    id: 0,
-    isCompleted: false,
-  });
+
   const [img, setImg] = useState<File>();
   const itemDetails = useRecoilValue(ItemsDetailState);
   const setItemDetail = useSetRecoilState(ItemsDetailState);
@@ -129,12 +125,6 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
         tenantId: data.tenantId,
         id: data.id,
       }));
-      setProps((prev) => ({
-        ...prev,
-        name: data.name,
-        id: data.id,
-        isCompleted: data.isCompleted,
-      }));
     });
 
     /* 페이지 아웃 시 itemsDetail 초기화 */
@@ -173,7 +163,7 @@ export default function ItemDetail({ params }: { params: { itemId: string } }) {
   }, [itemDetails]);
 
   return (
-    <div className="w-full flex flex-col gap-6 deskTop:px-[102px]  h-screen bg-white">
+    <div className="w-full min-h-screen py-6 deskTop:px-[102px] tablet:px-6 mobile:px-4 flex flex-col gap-6  bg-white">
       <TodoItem type="detail" />
       <div className="w-full flex tablet:flex-col mobile:flex-col gap-6">
         {/* 이미지 */}

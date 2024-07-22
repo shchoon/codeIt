@@ -4,7 +4,7 @@ import DoneList from "./component/list/DoneList";
 
 export default function Home() {
   return (
-    <div className="w-full flex flex-col gap-10">
+    <div className="w-full deskTop:px-[360px] tablet:px-6 mobile:px-4 py-6 flex flex-col gap-10">
       {/* 입력창 */}
       <CreateItem />
       {/* 목록 리스트 */}

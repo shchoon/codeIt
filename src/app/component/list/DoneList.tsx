@@ -10,23 +10,27 @@ import { IsUpdatedItems } from "@/app/recoil/isUpdatedItems";
 
 import EmptyIcon from "@/icon/emptyDone.svg";
 
+/* 완료된 할 일 목록 */
 export default function DoneList() {
   const loading = useRef<HTMLDivElement>(null);
   const scrollTarget = useRef<HTMLDivElement>(null);
+  const isUpdatedItems = useRecoilValue(IsUpdatedItems);
+  const setIsUpdatedItems = useSetRecoilState(IsUpdatedItems);
+
+  const [allDoneList, setAllDoneList] = useState<TodoItemsType[]>([]);
+  const [firstRender, setFirstRender] = useState<boolean>(false);
   const [doneList, setDoneList] = useState<TodoItemsType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pageData, setPageData] = useState({
-    page: 1,
+    page: 0,
     hasNextPage: true,
   });
-  const isUpdatedItems = useRecoilValue(IsUpdatedItems);
-  const setIsUpdatedItems = useSetRecoilState(IsUpdatedItems);
 
   const getDoneData = (page: number, hasScroll: boolean) => {
     instance("/items", {
       params: {
-        page: hasScroll ? page : 1,
-        pageSize: 10,
+        page: 1,
+        pageSize: 1000,
       },
     }).then((res) => {
       if (res.data.length === 0) {
@@ -36,15 +40,14 @@ export default function DoneList() {
       const dones = res.data.filter(
         (data: { isCompleted: boolean }) => data.isCompleted
       );
-      if (hasScroll) {
-        setDoneList((prev) => [...prev, ...dones]);
-      } else {
-        setDoneList((prev) => [...dones]);
-      }
+
+      setAllDoneList(dones);
+      setDoneList(dones.slice(0, 10));
 
       setPageData((prev) => ({
         ...prev,
         page: prev.page + 1,
+        hasNextPage: dones.length < 10 ? false : true,
       }));
       if (hasScroll) {
         setIsLoading(false);
@@ -52,8 +55,13 @@ export default function DoneList() {
     });
   };
 
-  /* todo -> done 상태 변경 */
+  /* 첫 렌더링 & doneList update */
   useEffect(() => {
+    /* 첫 렌더링 */
+    getDoneData(pageData.page, false);
+    setFirstRender(true);
+
+    /* doneList update */
     if (isUpdatedItems.revertToDone) {
       getDoneData(pageData.page, false);
 
@@ -64,19 +72,16 @@ export default function DoneList() {
 
       setPageData((prev) => ({
         ...prev,
-        page: 1,
+        page: 0,
       }));
 
       scrollTarget.current?.scrollTo(0, 0);
     }
   }, [isUpdatedItems.revertToDone]);
 
-  /* 무한 스크롤 */
+  /*  무한 스크롤 */
   useEffect(() => {
-    if (pageData.page === 1) {
-      getDoneData(1, false);
-    }
-    if (pageData.page !== 1) {
+    if (firstRender) {
       const options = {
         root: null,
         rootMargin: "0px",
@@ -87,8 +92,16 @@ export default function DoneList() {
         if (entry[0].isIntersecting) {
           setIsLoading(true);
           setTimeout(() => {
-            getDoneData(pageData.page, true);
-            console.log("page", pageData.page);
+            setDoneList(allDoneList.slice(0, 10 * pageData.page));
+            setPageData((prev) => ({
+              ...prev,
+              page: prev.page + 1,
+              hasNextPage:
+                allDoneList.slice(pageData.page * 10, (pageData.page + 1) * 10)
+                  .length !== 0
+                  ? true
+                  : false,
+            }));
           }, 1000);
         }
       };
@@ -106,7 +119,7 @@ export default function DoneList() {
         }
       };
     }
-  }, [pageData.page]);
+  }, [pageData]);
 
   return (
     <div className="flex pb-10 deskTop:w-1/2 tablet:w-full mobile:w-full flex-col gap-4">
@@ -120,7 +133,7 @@ export default function DoneList() {
         ref={scrollTarget}
         className="flex flex-col gap-4 deskTop:max-h-[400px] tablet:max-h-[350px] mobile:max-h-[350px] overflow-auto"
       >
-        {pageData.page !== 1 && doneList.length === 0 && (
+        {firstRender && doneList.length === 0 && (
           <div className="w-full flex flex-col gap-6 items-center deskTop:pt-16">
             <Image src={EmptyIcon} alt="empty" />
             <div className="text-slate-400 text-center text-[16px] font-bold">
@@ -134,7 +147,7 @@ export default function DoneList() {
           doneList.map((data, i) => {
             return <TodoItem key={i} todo={data} type="done" />;
           })}
-        {doneList.length !== 0 && !isLoading && <div ref={loading}></div>}
+        {pageData.hasNextPage && !isLoading && <div ref={loading}></div>}
         {isLoading && (
           <div className="w-full h-10 flex justify-center items-center">
             <svg
