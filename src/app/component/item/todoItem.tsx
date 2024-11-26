@@ -1,94 +1,89 @@
-// "use client";
-// import { useRouter } from "next/navigation";
-// import Image from "next/image";
-// import { useRecoilValue, useSetRecoilState } from "recoil";
+"use client";
+import Image from "next/image";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-// import CheckedIcon from "@/icon/Checked.svg";
-// import { IsUpdatedItems } from "@/app/recoil/isUpdatedItems";
-// import { ItemsDetailState } from "@/app/recoil/itemsDetail";
-// import { instance } from "@/api/axios";
+import FormatCache from "@/app/formatCache";
+import { todo } from "@/utils/type";
+import { instance } from "@/api/axios";
 
-// import { TodoItemsType } from "@/app/recoil/todoItems";
-// import { useState } from "react";
+import CheckedIcon from "@/icon/Checked.svg";
 
-// export default function TodoItem({
-//   todo,
-//   type,
-// }: {
-//   todo?: TodoItemsType;
-//   type: string;
-// }) {
-//   const router = useRouter();
-//   const setIsUpdatedItem = useSetRecoilState(IsUpdatedItems);
-//   const itemDetails = useRecoilValue(ItemsDetailState);
-//   const setItemsDetailState = useSetRecoilState(ItemsDetailState);
-//   const [isCompleted, setIsCompleted] = useState<boolean>(false);
-//   /* home에서 할 일 상태 변경 */
-//   const revertToDone = () => {
-//     const itemId = todo ? todo.id : itemDetails.id;
-//     instance
-//       .patch(`/items/${itemId}`, {
-//         isCompleted: true,
-//       })
-//       .then((res) => {
-//         setIsUpdatedItem((prev) => ({
-//           ...prev,
-//           revertToDone: true,
-//         }));
-//       });
-//   };
+export default function Item({
+  item,
+  status,
+}: {
+  item: todo;
+  status?: string;
+}) {
+  const router = useRouter();
+  const { removeDone, updateTodo, removeTodo, updateDone } = FormatCache();
 
-//   return (
-//     <div
-//       className={`w-full py-2 pl-4 flex items-center gap-4 border-2 border-slate-900 rounded-[27px]
-//         ${todo && todo.isCompleted && "bg-violet-200"}
-//         ${itemDetails.isCompleted && "bg-violet-200"}`}
-//     >
-//       <button
-//         className={`w-8 h-8 rounded-full border-2 border-slate-900  ${
-//           itemDetails.isCompleted ? "bg-violet-100" : "bg-yellow-50"
-//         } `}
-//         onClick={() => {
-//           if (type === "detail") {
-//             setItemsDetailState((prev) => ({
-//               ...prev,
-//               isCompleted: !prev.isCompleted,
-//             }));
-//           } else if (type === "todo") {
-//             revertToDone();
-//           }
-//         }}
-//       >
-//         {todo && todo.isCompleted && <Image src={CheckedIcon} alt="checked" />}
-//         {type === "detail" && itemDetails.isCompleted && (
-//           <Image src={CheckedIcon} alt="checked" />
-//         )}
-//       </button>
-//       {type === "todo" || type === "done" ? (
-//         <span
-//           className={`text-slate-800 cursor-pointer ${
-//             type === "done" && "line-through"
-//           }`}
-//           onClick={() => {
-//             if (todo) {
-//               router.push(`/items/${todo.id}`);
-//             }
-//           }}
-//         >
-//           {todo ? todo.name : itemDetails.name}
-//         </span>
-//       ) : (
-//         <input
-//           className="focus:outline-none bg-inherit underline"
-//           value={itemDetails.name}
-//           onChange={(e) => {
-//             setItemsDetailState((prev) => ({
-//               ...prev,
-//               name: e.target.value,
-//             }));
-//           }}
-//         />
-//       )}
-//     </div>
-//   );
-// }
+  const [isDone, setIsDone] = useState(item.isCompleted);
+
+  const revertTodo = async (id: number) => {
+    const res = await instance.patch(`/items/${id}`, {
+      isCompleted: true,
+    });
+
+    return res.data;
+  };
+
+  const revertDone = async (id: number) => {
+    const res = await instance.patch(`/items/${id}`, {
+      isCompleted: false,
+    });
+
+    return res.data;
+  };
+
+  const todoMutation = useMutation({
+    mutationFn: revertTodo,
+    onSuccess: (data) => {
+      removeTodo(data);
+      updateDone(data);
+    },
+  });
+
+  const doneMutation = useMutation({
+    mutationFn: revertDone,
+    onSuccess: (data) => {
+      removeDone(data);
+      updateTodo(data);
+    },
+  });
+
+  return (
+    <div
+      key={item.id}
+      className={`w-full py-2 pl-4 flex items-center ${
+        status && "justify-center"
+      } gap-4 border-2 border-slate-900 rounded-[27px] ${
+        isDone ? "bg-violet-200" : "bg-white"
+      }`}
+    >
+      <button
+        type="button"
+        className="w-8 h-8 rounded-full border-2 border-slate-900 bg-yellow-50"
+        onClick={() => {
+          if (status) {
+            setIsDone((prev) => !prev);
+          } else {
+            item.isCompleted
+              ? todoMutation.mutate(item.id)
+              : doneMutation.mutate(item.id);
+          }
+        }}
+      >
+        {isDone && <Image src={CheckedIcon} alt="checkedIcon" />}
+      </button>
+      <span
+        className={`${isDone && !status && "line-through"} cursor-pointer`}
+        onClick={() => router.push(`/items/${item.id}`)}
+      >
+        {item.name}
+      </span>
+    </div>
+  );
+}

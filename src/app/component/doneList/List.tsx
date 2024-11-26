@@ -16,7 +16,7 @@ export default async function DoneList() {
 
   return (
     <>
-      <div className="flex pb-10 deskTop:w-1/2 tablet:w-full mobile:w-full flex-col gap-4">
+      <div className="flex pb-10 deskTop:w-1/2 w-full flex-col gap-4">
         <span
           style={{ fontFamily: "HS-Regular" }}
           className="w-[101px] h-9 bg-green-700 rounded-[23px] flex items-center justify-center font-normal text-[18px] text-amber-300"

@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import Item from "../item/todoItem";
 import { todo } from "@/utils/type";
 import FormatCache from "@/app/formatCache";
 
@@ -61,27 +62,7 @@ export default function Dones({ dones }: { dones: todo[] }) {
       ) : (
         <div className="flex flex-col gap-4">
           {doneData.data.map((done, i) => {
-            return (
-              <div
-                key={i}
-                className="w-full py-2 pl-4 flex items-center gap-4 border-2 border-slate-900 rounded-[27px]"
-              >
-                <button
-                  className="w-8 h-8 rounded-full border-2 border-slate-900 bg-yellow-50"
-                  onClick={() => {
-                    mutation.mutate(done.id);
-                  }}
-                >
-                  <Image src={CheckedIcon} alt="checkedIcon" />
-                </button>
-                <span
-                  className="line-through cursor-pointer"
-                  onClick={() => router.push(`/items/${done.id}`)}
-                >
-                  {done.name}
-                </span>
-              </div>
-            );
+            return <Item item={done} />;
           })}
         </div>
       )}

@@ -19,7 +19,7 @@ export default async function TodoList() {
     .slice(0, 10);
 
   return (
-    <div className="flex deskTop:w-1/2 tablet:w-full mobile:w-full flex-col gap-4">
+    <div className="flex deskTop:w-1/2 w-full flex-col gap-4">
       <span
         style={{ fontFamily: "HS-Regular" }}
         className="w-[101px] h-9 bg-lime-300 rounded-[23px] flex items-center justify-center font-normal text-[18px] text-green-700"

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 
 import { instance } from "@/api/axios";
+import Item from "@/app/component/item/todoItem";
 
 import { detail, todo } from "@/utils/type";
 
@@ -88,16 +89,17 @@ export default function Detail({ item }: { item: detail }) {
 
   return (
     <form
-      className="w-full min-h-screen py-6 deskTop:px-[102px] tablet:px-6 mobile:px-4 flex flex-col gap-6 bg-white"
+      className="w-full min-h-screen py-6 deskTop:px-[102px] px-6 flex flex-col gap-6 bg-white"
       onSubmit={(e) => {
         e.preventDefault();
         modifyDetail();
       }}
     >
-      <div className="w-full flex tablet:flex-col mobile:flex-col gap-6">
+      <div className="w-full flex flex-col gap-6">
+        <Item item={item} status="detail" />
         {/* 이미지 */}
         <div
-          className={`relative flex items-center justify-center bg-slate-50 deskTop:w-[384px] w-full h-[311px] border-2 border-slate-300 rounded-3xl`}
+          className={`relative flex items-center justify-center bg-slate-50  w-full h-[311px] border-2 border-slate-300 rounded-3xl`}
         >
           <Image className="rounded-3xl" src={img.preview} alt="image" fill />
 
