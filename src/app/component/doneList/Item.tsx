@@ -62,7 +62,7 @@ export default function Dones({ dones }: { dones: todo[] }) {
       ) : (
         <div className="flex flex-col gap-4">
           {doneData.data.map((done, i) => {
-            return <Item item={done} />;
+            return <Item item={done} key={i} />;
           })}
         </div>
       )}

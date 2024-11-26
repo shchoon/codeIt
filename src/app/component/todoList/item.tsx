@@ -68,7 +68,7 @@ export default function Todos({ todos }: { todos: todo[] }) {
       ) : (
         <div className="flex flex-col gap-4">
           {todoData.data.map((todo, i) => {
-            return <Item item={todo} />;
+            return <Item item={todo} key={i} />;
           })}
         </div>
       )}
