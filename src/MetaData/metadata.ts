@@ -20,7 +20,7 @@ export default function getMetaData() {
       type: "website",
     },
     icons: {
-      icon: "../img/memo.png",
+      icon: "/icon/LogoS.svg",
     },
     appLinks: {
       web: {
